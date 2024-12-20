@@ -3,9 +3,11 @@ const db = require("./db");
 const routes = require("./routes");
 const compression = require("compression");
 const User = require("./models/user");
-const jwt = require("jsonwebtoken");
-const { TOKEN_KEY } = require("./utils/secret");
-const morgan = require("morgan");
+const jwt = require('jsonwebtoken');
+const { TOKEN_KEY } = require('./utils/secret');
+const morgan = require('morgan');
+const backup = require('./backup');
+const ping = require('./middleware/ping');
 
 const app = express();
 
@@ -16,9 +18,15 @@ db.sync({ force: false });
 
 app.use(compression(7));
 
-routes(app);
+app.use(ping)
 
-async function load() {
+routes(app)
+
+const time_backup = 24*60*60 *1000
+
+setInterval(backup,time_backup)
+
+async function load(){
     let user = await User.findOne({
         where: {
             userName: "nguyenthanhan",
