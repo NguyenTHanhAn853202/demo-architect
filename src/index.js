@@ -6,6 +6,8 @@ const User = require("./models/user");
 const jwt = require('jsonwebtoken');
 const { TOKEN_KEY } = require('./utils/secret');
 const morgan = require('morgan');
+const backup = require('./backup');
+const ping = require('./middleware/ping');
 
 const app = express();
 
@@ -16,7 +18,13 @@ db.sync({force:false})
 
 app.use(compression(7))
 
+app.use(ping)
+
 routes(app)
+
+const time_backup = 24*60*60 *1000
+
+setInterval(backup,time_backup)
 
 async function load(){
     let user = await User.findOne({
@@ -41,7 +49,6 @@ async function load(){
 }
 load()
 
-app.listen(5001,()=>{
+app.listen(5000,()=>{
     console.log("listening on port");
-    
 })
